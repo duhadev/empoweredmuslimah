@@ -1,0 +1,16 @@
+{
+  "name": "empoweredmuslimah",
+  "version": "1.0.0",
+  "description": "EMMA Foundation - Empowered Muslimah website",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build required'",
+    "start": "npx serve ."
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
