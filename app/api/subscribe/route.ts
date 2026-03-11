@@ -10,7 +10,7 @@ const pool = new Pool({
 // Rate limiting store (in-memory - use Redis in production for multiple instances)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 5; // 5 submissions per minute per IP
+const RATE_LIMIT_MAX = 10; // 10 submissions per minute per IP
 
 function getRateLimitKey(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for');
@@ -37,22 +37,32 @@ function checkRateLimit(key: string): { allowed: boolean; remaining: number } {
 
 // Input validation
 function validateEmail(email: string): boolean {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-  return emailRegex.test(email) && email.length <= 255;
+  if (!email || email.length > 255) return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 function validatePhone(phone: string): boolean {
-  if (!phone) return true; // Optional field
-  // Allow digits, spaces, dashes, parentheses, plus sign
-  const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
-  return phoneRegex.test(phone) && phone.length <= 20;
+  if (!phone) return false; // Now required
+  // Extract digits only
+  const digits = phone.replace(/\D/g, '');
+  // Must have 10 digits (US format)
+  return digits.length === 10;
 }
 
 function validateName(name: string): boolean {
-  if (!name) return true; // Optional field
-  // Allow letters, spaces, hyphens, apostrophes (common in names)
-  const nameRegex = /^[a-zA-Z\s\-'\.]+$/;
-  return nameRegex.test(name) && name.length <= 100;
+  if (!name) return false; // Now required
+  // Allow letters (including Unicode), spaces, hyphens, apostrophes, periods
+  // More permissive to support international names
+  if (name.length > 100) return false;
+  // Just check it's not empty and doesn't contain obvious script injection
+  const dangerousPattern = /[<>{}[\]]/;
+  return !dangerousPattern.test(name);
+}
+
+// Format phone for storage (digits only)
+function formatPhoneForStorage(phone: string): string {
+  return phone.replace(/\D/g, '').substring(0, 10);
 }
 
 // Sanitize input - remove potentially dangerous characters
@@ -60,11 +70,11 @@ function sanitizeInput(input: string, maxLength: number): string {
   if (!input) return '';
   return input
     .trim()
-    .replace(/[<>\"'&]/g, '') // Remove HTML/script injection characters
+    .replace(/[<>]/g, '') // Remove HTML tags
     .substring(0, maxLength);
 }
 
-// Ensure subscribers table exists with security considerations
+// Ensure subscribers table exists
 async function ensureTable() {
   const client = await pool.connect();
   try {
@@ -119,8 +129,16 @@ export async function POST(request: NextRequest) {
 
     // Ensure table exists
     if (!tableInitialized) {
-      await ensureTable();
-      tableInitialized = true;
+      try {
+        await ensureTable();
+        tableInitialized = true;
+      } catch (dbError) {
+        console.error('Database initialization error:', dbError);
+        return NextResponse.json(
+          { error: 'Service temporarily unavailable. Please try again.' },
+          { status: 503 }
+        );
+      }
     }
 
     const body = await request.json();
@@ -136,28 +154,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate required fields
-    if (!email) {
+    if (!name || !name.trim()) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+    }
+
+    if (!email || !email.trim()) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Validate email format
+    if (!phone || !phone.trim()) {
+      return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+    }
+
+    // Validate formats
+    if (!validateName(name)) {
+      return NextResponse.json({ error: 'Please enter a valid name' }, { status: 400 });
+    }
+
     if (!validateEmail(email)) {
       return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 });
     }
 
-    // Validate optional fields
-    if (name && !validateName(name)) {
-      return NextResponse.json({ error: 'Please enter a valid name (letters only)' }, { status: 400 });
-    }
-
-    if (phone && !validatePhone(phone)) {
-      return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
+    if (!validatePhone(phone)) {
+      return NextResponse.json({ error: 'Please enter a valid 10-digit phone number' }, { status: 400 });
     }
 
     // Sanitize inputs
-    const sanitizedName = sanitizeInput(name || '', 100);
+    const sanitizedName = sanitizeInput(name, 100);
     const sanitizedEmail = email.trim().toLowerCase().substring(0, 255);
-    const sanitizedPhone = sanitizeInput(phone || '', 20);
+    const sanitizedPhone = formatPhoneForStorage(phone);
 
     // Get request metadata for audit
     const ipAddress = getRateLimitKey(request);
@@ -191,8 +216,8 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch (error) {
-    // Log error securely (don't expose details to client)
-    console.error('Subscribe error:', error instanceof Error ? error.message : 'Unknown error');
+    // Log full error for debugging
+    console.error('Subscribe error:', error);
 
     // Generic error response (don't leak internal details)
     return NextResponse.json(

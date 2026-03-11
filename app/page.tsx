@@ -5,19 +5,14 @@ import Retreats from '@/components/Retreats';
 import Seminars from '@/components/Seminars';
 import Adventures from '@/components/Adventures';
 import EmailCTA from '@/components/EmailCTA';
-
-const CONFIG = {
-  donationUrl: 'https://example.com/donate',
-};
+import { useDonation } from '@/contexts/DonationContext';
 
 export default function Home() {
-  const goToDonate = (e: React.MouseEvent) => {
+  const { openDonationPopup } = useDonation();
+
+  const handleDonateClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (CONFIG.donationUrl) {
-      window.open(CONFIG.donationUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      alert('Donation link coming soon. Please check back later.');
-    }
+    openDonationPopup();
   };
 
   return (
@@ -34,7 +29,7 @@ export default function Home() {
           <p className="hero__subtitle">
             Building community, nurturing faith, and creating spaces where Muslim women can thrive together.
           </p>
-          <a href="#" className="btn btn--primary btn--large" onClick={goToDonate}>
+          <a href="#" className="btn btn--primary btn--large" onClick={handleDonateClick}>
             Support Our Mission
           </a>
         </div>

@@ -1,20 +1,49 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, ChangeEvent } from 'react';
+
+// Format phone number as (XXX) XXX-XXXX
+function formatPhoneNumber(value: string): string {
+  // Remove all non-digits
+  const digits = value.replace(/\D/g, '');
+
+  // Limit to 10 digits
+  const limited = digits.substring(0, 10);
+
+  // Format based on length
+  if (limited.length === 0) return '';
+  if (limited.length <= 3) return `(${limited}`;
+  if (limited.length <= 6) return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+  return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
+}
 
 export default function EmailCTA() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [honeypot, setHoneypot] = useState(''); // Bot trap
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim()) {
       setMessage('Please fill in all fields.');
+      setMessageType('error');
+      return;
+    }
+
+    // Validate phone has 10 digits
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      setMessage('Please enter a valid 10-digit phone number.');
       setMessageType('error');
       return;
     }
@@ -25,7 +54,7 @@ export default function EmailCTA() {
       const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone }),
+        body: JSON.stringify({ name, email, phone, honeypot }),
       });
 
       const data = await response.json();
@@ -61,6 +90,17 @@ export default function EmailCTA() {
         </p>
 
         <form className="email-cta__form" onSubmit={handleSubmit}>
+          {/* Honeypot field - hidden from users, catches bots */}
+          <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+            />
+          </div>
           <div className="email-cta__fields">
             <div className="form-group">
               <input
@@ -85,10 +125,12 @@ export default function EmailCTA() {
             <div className="form-group">
               <input
                 type="tel"
-                placeholder="Your phone number (optional)"
+                placeholder="(555) 555-5555"
+                required
                 className="form-input"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
+                maxLength={14}
               />
             </div>
             <button type="submit" className="btn btn--primary" disabled={isSubmitting}>

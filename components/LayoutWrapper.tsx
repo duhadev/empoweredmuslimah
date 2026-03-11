@@ -1,22 +1,38 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, ChangeEvent } from 'react';
+import { DonationProvider, useDonation } from '@/contexts/DonationContext';
 
 const CONFIG = {
-  donationUrl: 'https://example.com/donate',
   instagram: 'https://www.instagram.com/emma.foundation/',
 };
 
-export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+// Format phone number as (XXX) XXX-XXXX
+function formatPhoneNumber(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  const limited = digits.substring(0, 10);
 
-  const goToDonate = (e: React.MouseEvent) => {
+  if (limited.length === 0) return '';
+  if (limited.length <= 3) return `(${limited}`;
+  if (limited.length <= 6) return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
+  return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
+}
+
+export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <DonationProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </DonationProvider>
+  );
+}
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { openDonationPopup } = useDonation();
+
+  const handleDonateClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (CONFIG.donationUrl) {
-      window.open(CONFIG.donationUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      alert('Donation link coming soon. Please check back later.');
-    }
+    openDonationPopup();
   };
 
   const closeMobileMenu = () => {
@@ -52,7 +68,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
               <a
                 href="#"
                 className="btn btn--primary nav__donate"
-                onClick={(e) => { closeMobileMenu(); goToDonate(e); }}
+                onClick={(e) => { closeMobileMenu(); handleDonateClick(e); }}
               >
                 Donate
               </a>
@@ -65,22 +81,35 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       {children}
 
       {/* Footer */}
-      <Footer goToDonate={goToDonate} />
+      <Footer onDonateClick={handleDonateClick} />
     </>
   );
 }
 
-function Footer({ goToDonate }: { goToDonate: (e: React.MouseEvent) => void }) {
+function Footer({ onDonateClick }: { onDonateClick: (e: React.MouseEvent) => void }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [honeypot, setHoneypot] = useState(''); // Bot trap
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhone(formatted);
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!email.trim()) {
-      alert('Please enter your email address.');
+    if (!name.trim() || !email.trim() || !phone.trim()) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    // Validate phone has 10 digits
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10) {
+      alert('Please enter a valid 10-digit phone number.');
       return;
     }
 
@@ -90,7 +119,7 @@ function Footer({ goToDonate }: { goToDonate: (e: React.MouseEvent) => void }) {
       const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone }),
+        body: JSON.stringify({ name, email, phone, honeypot }),
       });
 
       const data = await response.json();
@@ -127,7 +156,7 @@ function Footer({ goToDonate }: { goToDonate: (e: React.MouseEvent) => void }) {
               <li><a href="#retreats">Retreats</a></li>
               <li><a href="#seminars">Seminars</a></li>
               <li><a href="#adventures">Adventures</a></li>
-              <li><a href="#" onClick={goToDonate}>Donate</a></li>
+              <li><a href="#" onClick={onDonateClick}>Donate</a></li>
             </ul>
           </nav>
 
@@ -147,9 +176,21 @@ function Footer({ goToDonate }: { goToDonate: (e: React.MouseEvent) => void }) {
             </div>
 
             <form className="footer__subscribe" onSubmit={handleSubmit}>
+              {/* Honeypot field - hidden from users, catches bots */}
+              <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
               <input
                 type="text"
                 placeholder="Your name"
+                required
                 className="form-input form-input--small"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -164,10 +205,12 @@ function Footer({ goToDonate }: { goToDonate: (e: React.MouseEvent) => void }) {
               />
               <input
                 type="tel"
-                placeholder="Phone (optional)"
+                placeholder="(555) 555-5555"
+                required
                 className="form-input form-input--small"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
+                maxLength={14}
               />
               <button type="submit" className="btn btn--small btn--primary" disabled={isSubmitting}>
                 {isSubmitting ? '...' : 'Subscribe'}
