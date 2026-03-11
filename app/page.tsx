@@ -20,9 +20,10 @@ export default function Home() {
       {/* Hero Section */}
       <section id="home" className="hero">
         <div className="hero__background">
-          <div className="placeholder-image placeholder-image--hero">
-            <span>Hero Background Image</span>
-          </div>
+              <img
+                src="/assets/images/Banner.webp"
+                alt="Flowers"
+              />
         </div>
         <div className="hero__content">
           <h1 className="hero__title">Empowering Muslim Women</h1>

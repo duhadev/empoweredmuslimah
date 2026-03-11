@@ -86,7 +86,7 @@ export default function EmailCTA() {
       <div className="email-cta__container">
         <h2 className="email-cta__title">Stay Updated on Our Events</h2>
         <p className="email-cta__subtitle">
-          Join our community and be the first to know about upcoming retreats, meetups, and gatherings.
+          Join our community and be the first to know about upcoming retreats, events, and adventures.
         </p>
 
         <form className="email-cta__form" onSubmit={handleSubmit}>

@@ -46,7 +46,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         <div className="nav__container">
           <a href="/" className="nav__logo">
             <img
-              src="/assets/images/Logo-transparent.png"
+              src="/assets/images/Text-logo.png"
               alt="EMMA Foundation"
               className="nav__logo-img"
             />
@@ -146,11 +146,13 @@ function Footer({ onDonateClick }: { onDonateClick: (e: React.MouseEvent) => voi
       <div className="footer__container">
         <div className="footer__main">
           <div className="footer__brand">
-            <img
-              src="/assets/images/Logo-transparent.png"
-              alt="EMMA Foundation"
-              className="footer__logo-img"
-            />
+            <div className="footer__logo-container">
+              <img
+                src="/assets/images/Text-logo.png"
+                alt="EMMA Foundation"
+                className="footer__logo-img"
+              />
+            </div>
             <p className="footer__tagline">Empowering Muslim women through community and faith.</p>
           </div>
 

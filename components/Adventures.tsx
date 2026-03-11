@@ -25,9 +25,10 @@ export default function Adventures() {
     <section id="adventures" className="section section--adventures">
       <div className="section__container section__split">
         <div className="section__image">
-          <div className="placeholder-image">
-            <span>Outdoor Adventures Image</span>
-          </div>
+          <img
+                src="/assets/images/Adventures.webp"
+                alt="Stroll in a garden"
+              />
         </div>
         <div className="section__content">
           <h2 className="section__title">Outdoor Adventures</h2>

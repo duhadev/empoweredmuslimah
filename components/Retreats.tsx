@@ -25,9 +25,10 @@ export default function Retreats() {
     <section id="retreats" className="section section--retreats">
       <div className="section__container section__split">
         <div className="section__image">
-          <div className="placeholder-image">
-            <span>Retreats Image</span>
-          </div>
+              <img
+                src="/assets/images/Retreats.webp"
+                alt="A nice mindful garden"
+              />
         </div>
         <div className="section__content">
           <h2 className="section__title">Retreats</h2>
