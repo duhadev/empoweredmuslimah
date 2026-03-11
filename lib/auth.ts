@@ -20,8 +20,9 @@ function secureCompare(a: string, b: string): boolean {
   }
 
   try {
-    const bufA = Buffer.from(a, 'utf8');
-    const bufB = Buffer.from(b, 'utf8');
+    // Use string encoding for secure comparison
+    const bufA = (Buffer as any).from(a, 'utf8');
+    const bufB = (Buffer as any).from(b, 'utf8');
     return timingSafeEqual(bufA, bufB);
   } catch {
     return false;
