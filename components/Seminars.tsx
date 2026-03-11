@@ -34,7 +34,7 @@ export default function Seminars() {
           </p>
           <a href="#email-signup" className="btn btn--secondary" onClick={scrollToEmail}>Get Seminar Updates</a>
         </div>
-        <div className="section__image">
+        <div className="section__image_seminar">
           <img
                 src="/assets/images/Seminars.webp"
                 alt="Career seminar"

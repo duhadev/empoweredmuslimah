@@ -31,7 +31,7 @@ export default function Adventures() {
               />
         </div>
         <div className="section__content">
-          <h2 className="section__title">Outdoor Adventures</h2>
+          <h2 className="section__title">Adventures</h2>
           <p className="section__text">
             Discover the beauty of creation while building friendships that last a lifetime. Our outdoor adventures invite Muslim women to explore nature together in a comfortable, supportive environment.
           </p>
