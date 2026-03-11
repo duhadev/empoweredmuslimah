@@ -1,0 +1,216 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { Pool } from 'pg';
+
+// Initialize PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
+
+// Rate limiting store (in-memory - use Redis in production for multiple instances)
+const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX = 5; // 5 submissions per minute per IP
+
+function getRateLimitKey(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
+  return ip;
+}
+
+function checkRateLimit(key: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const record = rateLimitStore.get(key);
+
+  if (!record || now > record.resetTime) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
+// Input validation
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+  return emailRegex.test(email) && email.length <= 255;
+}
+
+function validatePhone(phone: string): boolean {
+  if (!phone) return true; // Optional field
+  // Allow digits, spaces, dashes, parentheses, plus sign
+  const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
+  return phoneRegex.test(phone) && phone.length <= 20;
+}
+
+function validateName(name: string): boolean {
+  if (!name) return true; // Optional field
+  // Allow letters, spaces, hyphens, apostrophes (common in names)
+  const nameRegex = /^[a-zA-Z\s\-'\.]+$/;
+  return nameRegex.test(name) && name.length <= 100;
+}
+
+// Sanitize input - remove potentially dangerous characters
+function sanitizeInput(input: string, maxLength: number): string {
+  if (!input) return '';
+  return input
+    .trim()
+    .replace(/[<>\"'&]/g, '') // Remove HTML/script injection characters
+    .substring(0, maxLength);
+}
+
+// Ensure subscribers table exists with security considerations
+async function ensureTable() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS subscribers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100),
+        email VARCHAR(255) UNIQUE NOT NULL,
+        phone VARCHAR(20),
+        ip_address VARCHAR(45),
+        user_agent TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Add new columns if they don't exist (migration for existing tables)
+    await client.query(`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`);
+    await client.query(`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS ip_address VARCHAR(45)`);
+    await client.query(`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS user_agent TEXT`);
+    await client.query(`ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
+
+    // Create index on email for faster lookups
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_subscribers_email ON subscribers(email)`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_subscribers_created_at ON subscribers(created_at)`);
+  } finally {
+    client.release();
+  }
+}
+
+// Initialize table on cold start
+let tableInitialized = false;
+
+export async function POST(request: NextRequest) {
+  try {
+    // Rate limiting
+    const rateLimitKey = getRateLimitKey(request);
+    const { allowed, remaining } = checkRateLimit(rateLimitKey);
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'Retry-After': '60'
+          }
+        }
+      );
+    }
+
+    // Ensure table exists
+    if (!tableInitialized) {
+      await ensureTable();
+      tableInitialized = true;
+    }
+
+    const body = await request.json();
+    const { name, email, phone, honeypot } = body;
+
+    // Honeypot check - if this hidden field is filled, it's likely a bot
+    if (honeypot) {
+      // Silently reject but return success to not alert bots
+      return NextResponse.json({
+        success: true,
+        message: 'Successfully subscribed',
+      });
+    }
+
+    // Validate required fields
+    if (!email) {
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
+    // Validate email format
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 });
+    }
+
+    // Validate optional fields
+    if (name && !validateName(name)) {
+      return NextResponse.json({ error: 'Please enter a valid name (letters only)' }, { status: 400 });
+    }
+
+    if (phone && !validatePhone(phone)) {
+      return NextResponse.json({ error: 'Please enter a valid phone number' }, { status: 400 });
+    }
+
+    // Sanitize inputs
+    const sanitizedName = sanitizeInput(name || '', 100);
+    const sanitizedEmail = email.trim().toLowerCase().substring(0, 255);
+    const sanitizedPhone = sanitizeInput(phone || '', 20);
+
+    // Get request metadata for audit
+    const ipAddress = getRateLimitKey(request);
+    const userAgent = request.headers.get('user-agent')?.substring(0, 500) || '';
+
+    // Insert subscriber with parameterized query (prevents SQL injection)
+    const client = await pool.connect();
+    try {
+      await client.query(
+        `INSERT INTO subscribers (name, email, phone, ip_address, user_agent, updated_at)
+         VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+         ON CONFLICT (email) DO UPDATE SET
+           name = COALESCE(NULLIF($1, ''), subscribers.name),
+           phone = COALESCE(NULLIF($3, ''), subscribers.phone),
+           updated_at = CURRENT_TIMESTAMP`,
+        [sanitizedName, sanitizedEmail, sanitizedPhone, ipAddress, userAgent]
+      );
+    } finally {
+      client.release();
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Successfully subscribed',
+      },
+      {
+        headers: {
+          'X-RateLimit-Remaining': remaining.toString()
+        }
+      }
+    );
+  } catch (error) {
+    // Log error securely (don't expose details to client)
+    console.error('Subscribe error:', error instanceof Error ? error.message : 'Unknown error');
+
+    // Generic error response (don't leak internal details)
+    return NextResponse.json(
+      { error: 'Something went wrong. Please try again.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production'
+        ? 'https://empoweredmuslimah.org'
+        : '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}

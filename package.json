@@ -3,14 +3,22 @@
   "version": "1.0.0",
   "description": "EMMA Foundation - Empowered Muslimah website",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Static site - no build required'",
-    "start": "npx serve ."
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "pg": "^8.11.3"
+    "next": "^14.2.0",
+    "pg": "^8.11.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "vercel": "^32.0.0"
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.18.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
   }
 }

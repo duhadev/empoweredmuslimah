@@ -1,0 +1,8 @@
+Fix the form to take submissions without an issue.
+
+Add formatting into the form for phone number. Automatically have the phone number have 
+the dashes and ().
+
+Make phone number required.
+
+Implement the donation functionality via a popup embedding
