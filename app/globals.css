@@ -246,6 +246,11 @@ img {
   align-items: center;
 }
 
+.nav__logo-img {
+  height: 70px;
+  width: auto;
+}
+
 .nav__toggle {
   display: none;
   flex-direction: column;
@@ -551,6 +556,11 @@ img {
   max-width: 300px;
 }
 
+.footer__logo-img {
+  height: 80px;
+  width: auto;
+}
+
 .footer__tagline {
   margin-top: var(--spacing-sm);
   color: rgba(255, 255, 255, 0.8);
@@ -768,6 +778,14 @@ img {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: var(--spacing-md);
+}
+
+.donation-popup__title {
+  font-family: var(--font-heading);
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-dark);
 }
 
 .donation-popup__close {
@@ -777,11 +795,11 @@ img {
   width: 36px;
   height: 36px;
   border: none;
-  background-color: var(--color-bg);
+  background-color: var(--color-primary);
   border-radius: 50%;
   font-size: 1.5rem;
   line-height: 1;
-  color: var(--color-text);
+  color: var(--color-white);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -791,14 +809,24 @@ img {
 }
 
 .donation-popup__close:hover {
-  background-color: var(--color-highlight);
+  background-color: var(--color-dark);
 }
 
 .donation-popup__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
   padding: var(--spacing-lg);
   text-align: center;
   color: var(--color-text-light);
   font-family: var(--font-subheading);
+}
+
+.donation-popup iframe {
+  display: block;
+  border: none;
+  margin: 0 auto;
 }
 
 @media (max-width: 480px) {
