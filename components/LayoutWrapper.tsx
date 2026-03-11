@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent, ChangeEvent } from 'react';
+import Image from 'next/image';
 import { DonationProvider, useDonation } from '@/contexts/DonationContext';
 
 const CONFIG = {
@@ -46,9 +47,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between max-w-[1200px] mx-auto px-8 py-4">
           <a href="/" className="flex items-center">
             <div className="h-12 overflow-hidden flex items-center">
-              <img
+              <Image
                 src="/assets/images/Text-logo.png"
                 alt="EMMA Foundation"
+                width={192}
+                height={192}
                 className="h-48 w-auto"
               />
             </div>
@@ -59,9 +62,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             aria-label="Toggle navigation"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <span className="block w-full h-[3px] bg-dark rounded-sm transition-all"></span>
-            <span className="block w-full h-[3px] bg-dark rounded-sm transition-all"></span>
-            <span className="block w-full h-[3px] bg-dark rounded-sm transition-all"></span>
+            <span className="block w-full h-[3px] bg-dark rounded-sm transition-colors"></span>
+            <span className="block w-full h-[3px] bg-dark rounded-sm transition-colors"></span>
+            <span className="block w-full h-[3px] bg-dark rounded-sm transition-colors"></span>
           </button>
 
           <ul className={`flex list-none items-center max-md:flex-col max-md:fixed max-md:top-[70px] max-md:inset-x-0 max-md:bg-white max-md:px-8 max-md:py-8 max-md:gap-4 max-md:shadow-[0_4px_10px_rgba(0,0,0,0.1)] max-md:transition-all max-md:duration-300 md:gap-8 ${mobileMenuOpen ? 'max-md:translate-y-0 max-md:opacity-100 max-md:visible' : 'max-md:-translate-y-full max-md:opacity-0 max-md:invisible'}`}>
@@ -71,7 +74,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             <li>
               <a
                 href="#"
-                className="ml-4 max-md:ml-0 max-md:w-full max-md:text-center inline-block px-8 py-3.5 bg-primary text-white rounded-lg font-subheading font-semibold hover:bg-dark transition-all"
+                className="ml-4 max-md:ml-0 max-md:w-full max-md:text-center inline-block px-8 py-3.5 bg-primary text-white rounded-lg font-subheading font-semibold hover:bg-dark transition-colors"
                 onClick={(e) => { closeMobileMenu(); handleDonateClick(e); }}
               >
                 Donate
@@ -150,9 +153,11 @@ function Footer({ onDonateClick }: { onDonateClick: (e: React.MouseEvent) => voi
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1.5fr] gap-16 mb-16">
           <div className="max-w-[300px] md:col-span-2 lg:max-w-none lg:col-span-1">
             <div className="h-16 overflow-hidden flex items-center justify-start">
-              <img
+              <Image
                 src="/assets/images/Text-logo.png"
                 alt="EMMA Foundation"
+                width={224}
+                height={224}
                 className="h-56 w-auto brightness-0 invert -ml-12"
               />
             </div>
@@ -224,7 +229,7 @@ function Footer({ onDonateClick }: { onDonateClick: (e: React.MouseEvent) => voi
               />
               <button
                 type="submit"
-                className="inline-block px-4 py-2 text-sm font-subheading font-semibold rounded-lg bg-primary text-white hover:bg-dark transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                className="inline-block px-4 py-2 text-sm font-subheading font-semibold rounded-lg bg-primary text-white hover:bg-dark transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? '...' : 'Subscribe'}

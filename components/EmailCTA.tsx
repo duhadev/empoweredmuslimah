@@ -132,7 +132,7 @@ export default function EmailCTA() {
             </div>
             <button
               type="submit"
-              className="inline-block px-10 py-[1.125rem] font-subheading text-lg font-semibold rounded-lg transition-all bg-primary text-white hover:bg-dark disabled:opacity-70 disabled:cursor-not-allowed"
+              className="inline-block px-10 py-[1.125rem] font-subheading text-lg font-semibold rounded-lg transition-colors bg-primary text-white hover:bg-dark disabled:opacity-70 disabled:cursor-not-allowed"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Subscribing...' : 'Subscribe'}

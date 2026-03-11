@@ -1,23 +1,17 @@
 'use client';
 
+import Image from 'next/image';
+
 export default function Adventures() {
   const scrollToEmail = (e: React.MouseEvent) => {
     e.preventDefault();
     const emailSection = document.getElementById('email-signup');
     if (emailSection) {
-      emailSection.classList.add('email-cta--highlight');
-
-      const rect = emailSection.getBoundingClientRect();
-      const scrollTop = window.scrollY + rect.top - (window.innerHeight / 2) + (rect.height / 2);
-
-      window.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth'
+      emailSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      requestAnimationFrame(() => {
+        emailSection.classList.add('email-cta--highlight');
+        setTimeout(() => emailSection.classList.remove('email-cta--highlight'), 3000);
       });
-
-      setTimeout(() => {
-        emailSection.classList.remove('email-cta--highlight');
-      }, 3000);
     }
   };
 
@@ -25,9 +19,12 @@ export default function Adventures() {
     <section id="adventures" className="py-24 px-8 bg-bg">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="max-lg:order-first">
-          <img
+          <Image
             src="/assets/images/Adventures.webp"
             alt="Stroll in a garden"
+            width={600}
+            height={400}
+            sizes="(max-width: 1024px) 100vw, 50vw"
             className="w-full h-auto"
           />
         </div>
@@ -41,7 +38,7 @@ export default function Adventures() {
           </p>
           <a
             href="#email-signup"
-            className="inline-block px-8 py-3.5 font-subheading font-semibold rounded-lg border-2 border-dark text-dark bg-transparent hover:bg-dark hover:text-white transition-all"
+            className="inline-block px-8 py-3.5 font-subheading font-semibold rounded-lg border-2 border-dark text-dark bg-transparent hover:bg-dark hover:text-white transition-colors"
             onClick={scrollToEmail}
           >
             Get Adventure Updates
