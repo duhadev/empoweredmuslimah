@@ -24,7 +24,7 @@ export default function Retreats() {
   return (
     <section id="retreats" className="section section--retreats">
       <div className="section__container section__split">
-        <div className="section__image">
+        <div className="section__image_retreat">
               <img
                 src="/assets/images/Retreats.webp"
                 alt="A nice mindful garden"
