@@ -5,7 +5,7 @@
 **Organization:** EMMA Foundation — Empowered Muslim Association (Empowered Muslimah)
 **Type:** Non-profit / charity
 **Primary Goal:** Fundraising & donations
-**Tech Stack:** Custom code — HTML, CSS, JavaScript (no CMS framework)
+**Tech Stack:** Next.js 14 (App Router), React, TypeScript, Tailwind CSS v4
 
 ---
 
@@ -93,27 +93,66 @@ Replicate this general structure and warmth — but use EMMA's own palette, font
 
 ---
 
-## CSS Conventions
+## Styling: Tailwind CSS v4
+
+All styling uses Tailwind utility classes. There is no `tailwind.config.ts` — configuration is CSS-first via `@theme inline` in `app/globals.css`.
+
+### Theme tokens (`app/globals.css`)
 
 ```css
-:root {
-  --color-primary:   #E09380;
-  --color-highlight: #EABFB7;
-  --color-dark:      #6E4E41;
-  --color-contrast:  #7F9272;
-  --color-bg:        #FDFAF9; /* suggested off-white background */
+@import "tailwindcss";
 
-  --font-heading:    'Alike', serif;
-  --font-subheading: 'Source Sans Pro', sans-serif;
-  --font-body:       'Muli', sans-serif;
+@theme inline {
+  --color-primary:    #E09380;
+  --color-highlight:  #EABFB7;
+  --color-dark:       #6E4E41;
+  --color-contrast:   #7F9272;
+  --color-bg:         #FDFAF9;
+  --color-text:       #4A3F3A;
+  --color-text-light: #7A6E68;
+
+  --font-heading:    var(--font-heading);    /* set on <html> by next/font */
+  --font-subheading: var(--font-subheading);
+  --font-body:       var(--font-body);
 }
 ```
+
+`@theme inline` is required so Tailwind emits `var(--font-*)` directly (avoids circular reference with Next.js font variables).
+
+### Generated utility classes
+
+| Token | Tailwind utilities |
+|---|---|
+| `--color-primary` | `bg-primary`, `text-primary`, `border-primary` |
+| `--color-highlight` | `bg-highlight`, `text-highlight`, `border-highlight` |
+| `--color-dark` | `bg-dark`, `text-dark`, `border-dark` |
+| `--color-contrast` | `bg-contrast` |
+| `--color-bg` | `bg-bg` |
+| `--color-text` | `text-text` |
+| `--color-text-light` | `text-text-light` |
+| `--font-heading` | `font-heading` |
+| `--font-subheading` | `font-subheading` |
+| `--font-body` | `font-body` |
+
+Opacity modifiers work normally: `bg-black/60`, `text-white/80`, `bg-highlight/70`, etc.
+
+### PostCSS
+
+`postcss.config.mjs` uses `@tailwindcss/postcss` (no `autoprefixer` needed — Tailwind v4 handles it).
+
+### Preserved CSS class
+
+`.email-cta--highlight` stays in `globals.css` — it's toggled via `classList.add/remove` in JS across Retreats, Seminars, and Adventures components.
+
+### Fonts
+
+Fonts are loaded via `next/font/google` in `app/layout.tsx` (Alike, Source_Sans_3, Mulish) and injected as CSS variables on `<html>`. Do **not** use a `<link>` tag for Google Fonts.
 
 ---
 
 ## Page Structure
 
-### Home (`index.html`)
+### Home (`app/page.tsx`)
 
 ```
 ┌─────────────────────────────────────────┐

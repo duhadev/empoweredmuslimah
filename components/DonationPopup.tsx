@@ -40,14 +40,23 @@ export default function DonationPopup({ onClose }: DonationPopupProps) {
   };
 
   return (
-    <div className="donation-popup-overlay" onClick={handleOverlayClick}>
-      <div className="donation-popup">
-        <button className="donation-popup__close" onClick={onClose} aria-label="Close">
+    <div
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-[2000] p-8 max-sm:p-4"
+      onClick={handleOverlayClick}
+    >
+      <div className="relative bg-white rounded-lg max-w-[500px] w-full max-h-[90vh] max-sm:max-h-[85vh] overflow-y-auto shadow-[0_10px_40px_rgba(0,0,0,0.2)] p-8">
+        <button
+          className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center border-0 bg-primary text-white rounded-full text-2xl leading-none cursor-pointer hover:bg-dark transition-colors z-10"
+          onClick={onClose}
+          aria-label="Close"
+        >
           ×
         </button>
-        <h2 className="donation-popup__title">Support the Mission</h2>
+        <h2 className="font-heading text-center mb-8 text-dark">Support the Mission</h2>
         {isLoading && (
-          <div className="donation-popup__loading py-4">Loading...</div>
+          <div className="flex items-center justify-center min-h-[300px] p-16 text-center text-text-light font-subheading">
+            Loading...
+          </div>
         )}
         <iframe
           src="https://donorbox.org/embed/empowering-muslim-women-2?default_interval=o&enable_auto_scroll=true"

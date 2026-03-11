@@ -22,23 +22,30 @@ export default function Seminars() {
   };
 
   return (
-    <section id="seminars" className="section section--seminars">
-      <div className="section__container section__split">
-        <div className="section__content">
-          <h2 className="section__title">Career Seminars</h2>
-          <p className="section__text">
+    <section id="seminars" className="py-24 px-8 bg-highlight">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <h2 className="mb-4">Career Seminars</h2>
+          <p className="text-text-light mb-4">
             Elevate your professional journey through seminars designed to empower Muslim women in the workplace. Our career development programs address the unique challenges and opportunities you face while honoring your values and identity.
           </p>
-          <p className="section__text">
+          <p className="text-text-light mb-4">
             Connect with successful Muslim women professionals, gain practical skills, and build a network of sisters who understand your aspirations. From resume workshops to leadership training, we equip you for success.
           </p>
-          <a href="#email-signup" className="btn btn--secondary" onClick={scrollToEmail}>Get Seminar Updates</a>
+          <a
+            href="#email-signup"
+            className="inline-block px-8 py-3.5 font-subheading font-semibold rounded-lg border-2 border-dark text-dark bg-transparent hover:bg-dark hover:text-white transition-all"
+            onClick={scrollToEmail}
+          >
+            Get Seminar Updates
+          </a>
         </div>
-        <div className="section__image_seminar">
+        <div className="max-lg:order-first">
           <img
-                src="/assets/images/Seminars.webp"
-                alt="Career seminar"
-              />
+            src="/assets/images/Seminars.webp"
+            alt="Career seminar"
+            className="w-full h-auto"
+          />
         </div>
       </div>
     </section>

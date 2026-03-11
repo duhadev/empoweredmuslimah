@@ -22,23 +22,30 @@ export default function Adventures() {
   };
 
   return (
-    <section id="adventures" className="section section--adventures">
-      <div className="section__container section__split">
-        <div className="section__image">
+    <section id="adventures" className="py-24 px-8 bg-bg">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="max-lg:order-first">
           <img
-                src="/assets/images/Adventures.webp"
-                alt="Stroll in a garden"
-              />
+            src="/assets/images/Adventures.webp"
+            alt="Stroll in a garden"
+            className="w-full h-auto"
+          />
         </div>
-        <div className="section__content">
-          <h2 className="section__title">Adventures</h2>
-          <p className="section__text">
+        <div>
+          <h2 className="mb-4">Adventures</h2>
+          <p className="text-text-light mb-4">
             Discover the beauty of creation while building friendships that last a lifetime. Our outdoor adventures invite Muslim women to explore nature together in a comfortable, supportive environment.
           </p>
-          <p className="section__text">
+          <p className="text-text-light mb-4">
             Whether it&apos;s hiking scenic trails, kayaking peaceful waters, or camping under the stars, each adventure combines physical activity with spiritual reflection and meaningful connection with your sisters.
           </p>
-          <a href="#email-signup" className="btn btn--secondary" onClick={scrollToEmail}>Get Adventure Updates</a>
+          <a
+            href="#email-signup"
+            className="inline-block px-8 py-3.5 font-subheading font-semibold rounded-lg border-2 border-dark text-dark bg-transparent hover:bg-dark hover:text-white transition-all"
+            onClick={scrollToEmail}
+          >
+            Get Adventure Updates
+          </a>
         </div>
       </div>
     </section>

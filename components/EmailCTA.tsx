@@ -4,18 +4,16 @@ import { useState, FormEvent, ChangeEvent } from 'react';
 
 // Format phone number as (XXX) XXX-XXXX
 function formatPhoneNumber(value: string): string {
-  // Remove all non-digits
   const digits = value.replace(/\D/g, '');
-
-  // Limit to 10 digits
   const limited = digits.substring(0, 10);
 
-  // Format based on length
   if (limited.length === 0) return '';
   if (limited.length <= 3) return `(${limited}`;
   if (limited.length <= 6) return `(${limited.slice(0, 3)}) ${limited.slice(3)}`;
   return `(${limited.slice(0, 3)}) ${limited.slice(3, 6)}-${limited.slice(6)}`;
 }
+
+const inputClass = 'w-full px-4 py-3.5 font-body text-base text-text bg-white border border-highlight rounded-lg focus:outline-none focus:border-primary focus:ring-[3px] focus:ring-primary/20 placeholder:text-text-light';
 
 export default function EmailCTA() {
   const [name, setName] = useState('');
@@ -40,7 +38,6 @@ export default function EmailCTA() {
       return;
     }
 
-    // Validate phone has 10 digits
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length !== 10) {
       setMessage('Please enter a valid 10-digit phone number.');
@@ -82,14 +79,14 @@ export default function EmailCTA() {
   };
 
   return (
-    <section id="email-signup" className="email-cta">
-      <div className="email-cta__container">
-        <h2 className="email-cta__title">Stay Updated on Our Events</h2>
-        <p className="email-cta__subtitle">
+    <section id="email-signup" className="py-24 px-8 text-center bg-contrast">
+      <div className="max-w-[600px] mx-auto">
+        <h2 className="text-white mb-2">Stay Updated on Our Events</h2>
+        <p className="text-white/90 mb-8">
           Join our community and be the first to know about upcoming retreats, events, and adventures.
         </p>
 
-        <form className="email-cta__form" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           {/* Honeypot field - hidden from users, catches bots */}
           <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
             <input
@@ -101,44 +98,50 @@ export default function EmailCTA() {
               onChange={(e) => setHoneypot(e.target.value)}
             />
           </div>
-          <div className="email-cta__fields">
-            <div className="form-group">
+          <div className="flex flex-wrap gap-4 justify-center">
+            <div className="flex-1 min-w-[200px]">
               <input
                 type="text"
                 placeholder="Your name"
                 required
-                className="form-input"
+                className={inputClass}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="form-group">
+            <div className="flex-1 min-w-[200px]">
               <input
                 type="email"
                 placeholder="Your email address"
                 required
-                className="form-input"
+                className={inputClass}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="form-group">
+            <div className="flex-1 min-w-[200px]">
               <input
                 type="tel"
                 placeholder="(555) 555-5555"
                 required
-                className="form-input"
+                className={inputClass}
                 value={phone}
                 onChange={handlePhoneChange}
                 maxLength={14}
               />
             </div>
-            <button type="submit" className="btn btn--primary" disabled={isSubmitting}>
+            <button
+              type="submit"
+              className="inline-block px-10 py-[1.125rem] font-subheading text-lg font-semibold rounded-lg transition-all bg-primary text-white hover:bg-dark disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? 'Subscribing...' : 'Subscribe'}
             </button>
           </div>
           {message && (
-            <p className={`email-cta__message ${messageType}`}>{message}</p>
+            <p className={`mt-4 text-sm ${messageType === 'success' ? 'text-[#90EE90]' : messageType === 'error' ? 'text-[#FFB6C1]' : 'text-white'}`}>
+              {message}
+            </p>
           )}
         </form>
       </div>

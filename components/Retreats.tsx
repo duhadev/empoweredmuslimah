@@ -22,24 +22,31 @@ export default function Retreats() {
   };
 
   return (
-    <section id="retreats" className="section section--retreats">
-      <div className="section__container section__split">
-        <div className="section__image_retreat">
-              <img
-                src="/assets/images/Retreats.webp"
-                alt="A nice mindful garden"
-              />
+    <section id="retreats" className="py-24 px-8 bg-white">
+      <div className="max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="max-lg:order-first">
+          <img
+            src="/assets/images/Retreats.webp"
+            alt="A nice mindful garden"
+            className="w-full h-auto"
+          />
         </div>
-        <div className="section__content">
-          <h2 className="section__title">Retreats</h2>
-          <p className="section__subtitle">Local and National</p>
-          <p className="section__text">
+        <div>
+          <h2 className="mb-4">Retreats</h2>
+          <p className="font-subheading text-[1.1rem] font-semibold text-primary mb-4 uppercase tracking-[0.05em]">Local and National</p>
+          <p className="text-text-light mb-4">
             Step away from the noise of everyday life and immerse yourself in transformative retreat experiences designed exclusively for Muslim women. Our retreats blend spiritual nourishment with sisterhood, creating moments of peace and renewal.
           </p>
-          <p className="section__text">
+          <p className="text-text-light mb-4">
             From weekend getaways at local venues to week-long national gatherings, each retreat offers guided reflection, engaging workshops, and the opportunity to forge lasting bonds with like-minded sisters.
           </p>
-          <a href="#email-signup" className="btn btn--secondary" onClick={scrollToEmail}>Get Retreat Updates</a>
+          <a
+            href="#email-signup"
+            className="inline-block px-8 py-3.5 font-subheading font-semibold rounded-lg border-2 border-dark text-dark bg-transparent hover:bg-dark hover:text-white transition-all"
+            onClick={scrollToEmail}
+          >
+            Get Retreat Updates
+          </a>
         </div>
       </div>
     </section>
