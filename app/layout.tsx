@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Alike, Source_Sans_3, Mulish } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import './globals.css';
 
@@ -38,6 +39,7 @@ export default function RootLayout({
     <html lang="en" className={`${alike.variable} ${sourceSans.variable} ${mulish.variable}`}>
       <body>
         <LayoutWrapper>{children}</LayoutWrapper>
+        <Analytics />
       </body>
     </html>
   );
