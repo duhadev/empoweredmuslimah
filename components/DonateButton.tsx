@@ -11,7 +11,7 @@ export default function DonateButton() {
       className="inline-block px-10 py-[1.125rem] font-subheading text-lg font-semibold rounded-lg transition-colors bg-primary text-white hover:bg-dark"
       onClick={(e) => { e.preventDefault(); openDonationPopup(); }}
     >
-      Support Our Mission
+      Donate To Our Cause
     </a>
   );
 }

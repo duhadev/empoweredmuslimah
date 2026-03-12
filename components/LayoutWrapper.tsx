@@ -77,7 +77,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 className="ml-4 max-md:ml-0 max-md:w-full max-md:text-center inline-block px-8 py-3.5 bg-primary text-white rounded-lg font-subheading font-semibold hover:bg-dark transition-colors"
                 onClick={(e) => { closeMobileMenu(); handleDonateClick(e); }}
               >
-                Donate
+                Donate Now
               </a>
             </li>
           </ul>
